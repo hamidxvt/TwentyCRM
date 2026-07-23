@@ -1,3 +1,3 @@
-FROM alpine:latest
-RUN apk add --no-cache docker-compose
-CMD ["docker-compose", "up", "-d"]
+FROM twentycrm/twenty:latest
+EXPOSE 3000
+CMD ["/app/entrypoint.sh"]

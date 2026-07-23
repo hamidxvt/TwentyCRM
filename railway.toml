@@ -1,6 +1,8 @@
 [build]
 builder = "dockerfile"
-dockerfile = "docker-compose.yml"
 
 [deploy]
-startCommand = "docker compose up -d"
+healthcheckPath = "/healthz"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
