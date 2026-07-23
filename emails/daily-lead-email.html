@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Update – Tryverse CRM</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+    .wrapper { max-width: 640px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #6C63FF 0%, #3D5AF1 100%); padding: 36px 40px; text-align: center; }
+    .header img { width: 44px; height: 44px; margin-bottom: 12px; }
+    .header .logo-text { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    .header .tagline { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 4px; }
+    .header .date-badge { display: inline-block; margin-top: 16px; background: rgba(255,255,255,0.2); color: #fff; font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 20px; }
+
+    /* Hero */
+    .hero { padding: 36px 40px 24px; border-bottom: 1px solid #f0f0f0; }
+    .hero h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
+    .hero p { font-size: 15px; color: #64748b; margin-top: 8px; line-height: 1.6; }
+
+    /* Stats Row */
+    .stats { display: flex; gap: 0; border-bottom: 1px solid #f0f0f0; }
+    .stat { flex: 1; padding: 24px 20px; text-align: center; border-right: 1px solid #f0f0f0; }
+    .stat:last-child { border-right: none; }
+    .stat .number { font-size: 28px; font-weight: 700; color: #6C63FF; }
+    .stat .label { font-size: 12px; color: #94a3b8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Section */
+    .section { padding: 28px 40px; border-bottom: 1px solid #f0f0f0; }
+    .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    /* Lead Card */
+    .lead-card { background: #f8faff; border: 1px solid #e8eeff; border-radius: 10px; padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+    .lead-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #3D5AF1); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .lead-info { flex: 1; }
+    .lead-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .lead-email { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .lead-company { font-size: 12px; color: #94a3b8; }
+    .lead-badge { background: #eef2ff; color: #6C63FF; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .lead-badge.hot { background: #fef3f2; color: #ef4444; }
+    .lead-badge.warm { background: #fff7ed; color: #f97316; }
+    .lead-badge.new { background: #f0fdf4; color: #22c55e; }
+
+    /* Task List */
+    .task-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+    .task-item:last-child { border-bottom: none; }
+    .task-dot { width: 8px; height: 8px; border-radius: 50%; background: #6C63FF; margin-top: 5px; flex-shrink: 0; }
+    .task-dot.urgent { background: #ef4444; }
+    .task-dot.done { background: #22c55e; }
+    .task-text { font-size: 14px; color: #374151; }
+    .task-time { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+    /* CTA */
+    .cta { padding: 32px 40px; text-align: center; background: #fafbff; }
+    .cta-btn { display: inline-block; background: linear-gradient(135deg, #6C63FF, #3D5AF1); color: #fff; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 10px; text-decoration: none; letter-spacing: -0.2px; }
+    .cta-sub { font-size: 13px; color: #94a3b8; margin-top: 12px; }
+
+    /* Footer */
+    .footer { padding: 24px 40px; background: #1a1a2e; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.7; }
+    .footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-text">🚀 Tryverse CRM</div>
+    <div class="tagline">Your daily lead intelligence</div>
+    <div class="date-badge">📅 {{DATE}} — Daily Digest</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Good morning, {{FIRST_NAME}} 👋</h1>
+    <p>Here's what's happening with your leads today. You have <strong>{{NEW_LEADS_COUNT}} new leads</strong> and <strong>{{FOLLOWUP_COUNT}} follow-ups</strong> scheduled.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="number">{{NEW_LEADS_COUNT}}</div>
+      <div class="label">New Leads</div>
+    </div>
+    <div class="stat">
+      <div class="number">{{ACTIVE_DEALS}}</div>
+      <div class="label">Active Deals</div>
+    </div>
+    <div class="stat">
+      <div class="number">{{FOLLOWUP_COUNT}}</div>
+      <div class="label">Follow-ups</div>
+    </div>
+    <div class="stat">
+      <div class="number">{{CLOSED_TODAY}}</div>
+      <div class="label">Closed Today</div>
+    </div>
+  </div>
+
+  <!-- Hot Leads -->
+  <div class="section">
+    <div class="section-title">🔥 Hot Leads Today</div>
+
+    <div class="lead-card">
+      <div class="lead-avatar">H</div>
+      <div class="lead-info">
+        <div class="lead-name">Hamid Khan</div>
+        <div class="lead-email">hamid.khan@xvantech.com</div>
+        <div class="lead-company">Xvantech · Enterprise</div>
+      </div>
+      <div class="lead-badge hot">Hot</div>
+    </div>
+
+    {{#LEADS}}
+    <div class="lead-card">
+      <div class="lead-avatar">{{INITIAL}}</div>
+      <div class="lead-info">
+        <div class="lead-name">{{NAME}}</div>
+        <div class="lead-email">{{EMAIL}}</div>
+        <div class="lead-company">{{COMPANY}}</div>
+      </div>
+      <div class="lead-badge {{STATUS_CLASS}}">{{STATUS}}</div>
+    </div>
+    {{/LEADS}}
+  </div>
+
+  <!-- Today's Tasks -->
+  <div class="section">
+    <div class="section-title">✅ Today's Tasks</div>
+    <div class="task-item">
+      <div class="task-dot urgent"></div>
+      <div>
+        <div class="task-text">Follow up with Hamid Khan — proposal sent 2 days ago</div>
+        <div class="task-time">Due: Today, 2:00 PM</div>
+      </div>
+    </div>
+    {{#TASKS}}
+    <div class="task-item">
+      <div class="task-dot {{PRIORITY}}"></div>
+      <div>
+        <div class="task-text">{{TASK_TITLE}}</div>
+        <div class="task-time">Due: {{DUE_TIME}}</div>
+      </div>
+    </div>
+    {{/TASKS}}
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <a href="{{CRM_URL}}" class="cta-btn">Open CRM Dashboard →</a>
+    <div class="cta-sub">View all leads, deals, and tasks in one place.</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>
+      Sent by <strong style="color:rgba(255,255,255,0.6)">Tryverse CRM</strong> · 
+      <a href="{{UNSUBSCRIBE_URL}}">Unsubscribe</a> · 
+      <a href="{{PREFERENCES_URL}}">Preferences</a>
+    </p>
+    <p style="margin-top:8px">© 2026 Tryverse. All rights reserved.</p>
+  </div>
+
+</div>
+</body>
+</html>

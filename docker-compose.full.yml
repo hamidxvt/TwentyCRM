@@ -1,0 +1,104 @@
+# Docker Compose configuration for Twenty CRM + Mautic Email
+# This file is a reference for extending the main docker-compose.yml from the Twenty repository
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database (shared by Twenty and Mautic)
+  postgres:
+    image: postgres:15-alpine
+    container_name: twenty-postgres
+    environment:
+      POSTGRES_DB: twenty
+      POSTGRES_USER: ${POSTGRES_USER:-twenty}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-twenty}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: twenty-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Twenty Backend API
+  twenty-server:
+    image: twentyhq/twenty:latest
+    container_name: twenty-server
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-twenty}:${POSTGRES_PASSWORD:-password}@postgres:5432/twenty
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      NODE_ENV: development
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./twenty:/app
+    command: npm run start:server
+
+  # Twenty Frontend
+  twenty-front:
+    image: twentyhq/twenty-front:latest
+    container_name: twenty-front
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - twenty-server
+    volumes:
+      - ./twenty:/app
+
+  # Mautic Email Marketing Platform
+  mautic:
+    image: mautic/mautic:latest
+    container_name: twenty-mautic
+    environment:
+      MAUTIC_DB_HOST: postgres
+      MAUTIC_DB_PORT: 5432
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: ${POSTGRES_USER:-twenty}
+      MAUTIC_DB_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      MAUTIC_URL: http://localhost:8080
+      MAUTIC_TRUSTED_HOSTS: localhost,127.0.0.1
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - mautic_data:/var/www/html
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  mautic_data:
+
+networks:
+  default:
+    name: twenty-network

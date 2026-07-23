@@ -1,0 +1,407 @@
+{
+  "workflows": [
+    {
+      "name": "Welcome Email - Day 0",
+      "description": "Send welcome email immediately when new lead is created",
+      "trigger": {
+        "type": "DATABASE_EVENT",
+        "settings": {
+          "objectType": "person",
+          "eventName": "person.created"
+        }
+      },
+      "steps": [
+        {
+          "id": "send-welcome-email",
+          "type": "SEND_EMAIL",
+          "settings": {
+            "to": "{{trigger.person.email}}",
+            "subject": "Welcome to our community, {{trigger.person.firstName}}!",
+            "htmlBody": "<!-- Use content from drip-campaign-welcome.html -->",
+            "fromEmail": "{{workspaceEmail}}",
+            "trackOpens": true,
+            "trackClicks": true
+          }
+        },
+        {
+          "id": "create-welcome-activity",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{trigger.person.id}}",
+            "type": "EMAIL_SENT",
+            "title": "Welcome email sent",
+            "description": "Drip campaign Day 0 - Welcome email"
+          }
+        },
+        {
+          "id": "add-drip-tag",
+          "type": "UPDATE_RECORD",
+          "settings": {
+            "recordType": "person",
+            "recordId": "{{trigger.person.id}}",
+            "updateField": "tags",
+            "value": ["drip-campaign-active"]
+          }
+        },
+        {
+          "id": "schedule-day1",
+          "type": "DELAY",
+          "settings": {
+            "duration": 1,
+            "unit": "days"
+          }
+        }
+      ],
+      "nextWorkflowId": "day-1-email"
+    },
+
+    {
+      "name": "Day 1 Quick Tip",
+      "description": "Send Day 1 email 1 day after welcome",
+      "trigger": {
+        "type": "SCHEDULE",
+        "parentWorkflowId": "welcome-email-day-0"
+      },
+      "steps": [
+        {
+          "id": "send-day1-email",
+          "type": "SEND_EMAIL",
+          "settings": {
+            "to": "{{previousTrigger.person.email}}",
+            "subject": "💡 Quick tip for {{previousTrigger.person.firstName}}",
+            "htmlBody": "<!-- Use content from drip-campaign-day1.html -->",
+            "trackOpens": true,
+            "trackClicks": true
+          }
+        },
+        {
+          "id": "create-day1-activity",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{previousTrigger.person.id}}",
+            "type": "EMAIL_SENT",
+            "title": "Day 1 email sent",
+            "description": "Drip campaign Day 1 - Quick tip"
+          }
+        },
+        {
+          "id": "schedule-day3",
+          "type": "DELAY",
+          "settings": {
+            "duration": 2,
+            "unit": "days"
+          }
+        }
+      ],
+      "nextWorkflowId": "day-3-email"
+    },
+
+    {
+      "name": "Day 3 Check-in",
+      "description": "Send Day 3 email (check if replied)",
+      "trigger": {
+        "type": "SCHEDULE",
+        "parentWorkflowId": "day-1-email"
+      },
+      "steps": [
+        {
+          "id": "check-if-replied",
+          "type": "IF_ELSE",
+          "settings": {
+            "condition": {
+              "type": "EMAIL_THREAD_EXISTS",
+              "personId": "{{previousTrigger.person.id}}"
+            }
+          },
+          "thenSteps": [
+            {
+              "id": "mark-engaged",
+              "type": "UPDATE_RECORD",
+              "settings": {
+                "recordType": "person",
+                "recordId": "{{previousTrigger.person.id}}",
+                "updateField": "status",
+                "value": "warm"
+              }
+            }
+          ],
+          "elseSteps": [
+            {
+              "id": "send-day3-email",
+              "type": "SEND_EMAIL",
+              "settings": {
+                "to": "{{previousTrigger.person.email}}",
+                "subject": "❓ Quick question for {{previousTrigger.person.firstName}}",
+                "htmlBody": "<!-- Use content from drip-campaign-day3.html -->",
+                "trackOpens": true,
+                "trackClicks": true
+              }
+            },
+            {
+              "id": "create-day3-activity",
+              "type": "CREATE_ACTIVITY",
+              "settings": {
+                "personId": "{{previousTrigger.person.id}}",
+                "type": "EMAIL_SENT",
+                "title": "Day 3 email sent",
+                "description": "Drip campaign Day 3 - Check-in"
+              }
+            }
+          ]
+        },
+        {
+          "id": "schedule-day7",
+          "type": "DELAY",
+          "settings": {
+            "duration": 4,
+            "unit": "days"
+          }
+        }
+      ],
+      "nextWorkflowId": "day-7-email"
+    },
+
+    {
+      "name": "Day 7 Offer",
+      "description": "Send Day 7 email with call-to-action offer",
+      "trigger": {
+        "type": "SCHEDULE",
+        "parentWorkflowId": "day-3-email"
+      },
+      "steps": [
+        {
+          "id": "send-day7-email",
+          "type": "SEND_EMAIL",
+          "settings": {
+            "to": "{{previousTrigger.person.email}}",
+            "subject": "🎁 Something special for {{previousTrigger.person.firstName}}",
+            "htmlBody": "<!-- Use content from drip-campaign-day7.html -->",
+            "trackOpens": true,
+            "trackClicks": true
+          }
+        },
+        {
+          "id": "create-day7-activity",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{previousTrigger.person.id}}",
+            "type": "EMAIL_SENT",
+            "title": "Day 7 email sent",
+            "description": "Drip campaign Day 7 - Offer"
+          }
+        },
+        {
+          "id": "add-week1-tag",
+          "type": "UPDATE_RECORD",
+          "settings": {
+            "recordType": "person",
+            "recordId": "{{previousTrigger.person.id}}",
+            "updateField": "tags",
+            "value": ["drip-week-1-complete"]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Weekly Email - 26 Weeks",
+      "description": "Send weekly email every Monday for 6 months",
+      "trigger": {
+        "type": "CRON",
+        "settings": {
+          "schedule": {
+            "type": "CUSTOM",
+            "pattern": "0 8 * * MON"
+          }
+        }
+      },
+      "steps": [
+        {
+          "id": "filter-active-leads",
+          "type": "ITERATOR",
+          "settings": {
+            "objectType": "person",
+            "filter": {
+              "tags": "contains drip-campaign-active",
+              "createdAt": "within 6 months"
+            }
+          }
+        },
+        {
+          "id": "send-weekly-email",
+          "type": "SEND_EMAIL",
+          "settings": {
+            "to": "{{person.email}}",
+            "subject": "Weekly Update - Week {{currentWeek}}",
+            "htmlBody": "<!-- Use content from weekly-lead-email.html -->",
+            "trackOpens": true,
+            "trackClicks": true
+          }
+        },
+        {
+          "id": "log-weekly-activity",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{person.id}}",
+            "type": "EMAIL_SENT",
+            "title": "Weekly email sent - Week {{currentWeek}}",
+            "description": "Drip campaign weekly email"
+          }
+        },
+        {
+          "id": "track-engagement",
+          "type": "UPDATE_RECORD",
+          "settings": {
+            "recordType": "person",
+            "recordId": "{{person.id}}",
+            "updateField": "engagementScore",
+            "value": "{{engagementScore + 1}}"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Monthly Checkpoint - 6 Months",
+      "description": "Send monthly report and move engaged leads to sales",
+      "trigger": {
+        "type": "CRON",
+        "settings": {
+          "schedule": {
+            "type": "CUSTOM",
+            "pattern": "0 9 1 * *"
+          }
+        }
+      },
+      "steps": [
+        {
+          "id": "filter-active-leads",
+          "type": "ITERATOR",
+          "settings": {
+            "objectType": "person",
+            "filter": {
+              "tags": "contains drip-campaign-active",
+              "createdAt": "within 6 months"
+            }
+          }
+        },
+        {
+          "id": "check-engagement-level",
+          "type": "IF_ELSE",
+          "settings": {
+            "condition": {
+              "type": "ENGAGEMENT_SCORE",
+              "greaterThan": 5
+            }
+          },
+          "thenSteps": [
+            {
+              "id": "mark-hot-lead",
+              "type": "UPDATE_RECORD",
+              "settings": {
+                "recordType": "person",
+                "recordId": "{{person.id}}",
+                "updateField": "status",
+                "value": "hot"
+              }
+            },
+            {
+              "id": "create-followup-task",
+              "type": "CREATE_ACTIVITY",
+              "settings": {
+                "personId": "{{person.id}}",
+                "type": "TASK",
+                "title": "Follow up - Hot lead from drip",
+                "dueDate": "tomorrow"
+              }
+            }
+          ],
+          "elseSteps": [
+            {
+              "id": "send-monthly-report",
+              "type": "SEND_EMAIL",
+              "settings": {
+                "to": "{{person.email}}",
+                "subject": "Your Monthly Summary",
+                "htmlBody": "<!-- Use content from monthly-lead-email.html -->",
+                "trackOpens": true,
+                "trackClicks": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "log-monthly-checkpoint",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{person.id}}",
+            "type": "MILESTONE",
+            "title": "Monthly checkpoint complete",
+            "description": "Engagement score: {{engagementScore}}"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Auto-Reply Tracker",
+      "description": "When lead replies, auto-update status and notify",
+      "trigger": {
+        "type": "DATABASE_EVENT",
+        "settings": {
+          "objectType": "emailThread",
+          "eventName": "email.thread.reply"
+        }
+      },
+      "steps": [
+        {
+          "id": "find-person",
+          "type": "FIND_RECORD",
+          "settings": {
+            "objectType": "person",
+            "filterBy": "email",
+            "filterValue": "{{trigger.email.from}}"
+          }
+        },
+        {
+          "id": "update-to-warm",
+          "type": "UPDATE_RECORD",
+          "settings": {
+            "recordType": "person",
+            "recordId": "{{foundPerson.id}}",
+            "updateField": "status",
+            "value": "warm"
+          }
+        },
+        {
+          "id": "add-engaged-tag",
+          "type": "UPDATE_RECORD",
+          "settings": {
+            "recordType": "person",
+            "recordId": "{{foundPerson.id}}",
+            "updateField": "tags",
+            "value": ["engaged"]
+          }
+        },
+        {
+          "id": "log-reply-activity",
+          "type": "CREATE_ACTIVITY",
+          "settings": {
+            "personId": "{{foundPerson.id}}",
+            "type": "EMAIL_REPLY",
+            "title": "Lead replied!",
+            "description": "{{trigger.email.subject}}"
+          }
+        },
+        {
+          "id": "send-slack-notification",
+          "type": "SEND_WEBHOOK",
+          "settings": {
+            "webhookUrl": "{{slackWebhookUrl}}",
+            "message": "🔥 {{foundPerson.firstName}} {{foundPerson.lastName}} replied to drip email!"
+          }
+        }
+      ]
+    }
+  ]
+}

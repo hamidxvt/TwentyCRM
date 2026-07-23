@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Report – Tryverse CRM</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+    .wrapper { max-width: 640px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 0; text-align: center; overflow: hidden; position: relative; }
+    .header-bg { padding: 44px 40px; position: relative; z-index: 1; }
+    .header::before { content: ''; position: absolute; top: -80px; left: -80px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(108,99,255,0.25) 0%, transparent 65%); }
+    .header::after { content: ''; position: absolute; bottom: -60px; right: -60px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(61,90,241,0.2) 0%, transparent 65%); }
+    .month-tag { display: inline-block; background: linear-gradient(135deg, #6C63FF, #3D5AF1); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 16px; border-radius: 20px; margin-bottom: 16px; }
+    .header h1 { font-size: 32px; font-weight: 800; color: #fff; line-height: 1.15; }
+    .header h1 span { background: linear-gradient(135deg, #a5b4fc, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header .sub { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 10px; }
+
+    /* Score Card */
+    .score-card { background: linear-gradient(135deg, #6C63FF, #3D5AF1); margin: 28px 40px; border-radius: 14px; padding: 24px 28px; display: flex; align-items: center; gap: 20px; }
+    .score-circle { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .score-circle .score-num { font-size: 24px; font-weight: 800; color: #fff; line-height: 1; }
+    .score-circle .score-lbl { font-size: 9px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-text h3 { font-size: 16px; font-weight: 700; color: #fff; }
+    .score-text p { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 4px; line-height: 1.5; }
+
+    /* Mega Stats */
+    .mega-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+    .mega-stat { padding: 24px 20px; text-align: center; border-right: 1px solid #f0f0f0; }
+    .mega-stat:last-child { border-right: none; }
+    .mega-stat .m-num { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+    .mega-stat .m-change { font-size: 12px; font-weight: 600; color: #22c55e; margin-top: 2px; }
+    .mega-stat .m-change.down { color: #ef4444; }
+    .mega-stat .m-lbl { font-size: 11px; color: #94a3b8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .section { padding: 28px 40px; border-bottom: 1px solid #f0f0f0; }
+    .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+
+    /* Month Chart Bars */
+    .chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-bottom: 8px; }
+    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .bar { width: 100%; border-radius: 4px 4px 0 0; background: #e2e8f0; transition: all 0.3s; }
+    .bar.active { background: linear-gradient(180deg, #6C63FF, #3D5AF1); }
+    .bar-label { font-size: 10px; color: #94a3b8; }
+    .chart-labels { display: flex; gap: 6px; }
+    .chart-label { flex: 1; text-align: center; font-size: 10px; color: #94a3b8; }
+
+    /* Leaderboard */
+    .lb-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-rank { font-size: 14px; font-weight: 800; color: #94a3b8; width: 26px; text-align: center; }
+    .lb-rank.gold { color: #f59e0b; }
+    .lb-rank.silver { color: #94a3b8; }
+    .lb-rank.bronze { color: #b45309; }
+    .lb-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #3D5AF1); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .lb-info { flex: 1; }
+    .lb-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .lb-detail { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .lb-right { text-align: right; }
+    .lb-value { font-size: 15px; font-weight: 700; color: #6C63FF; }
+    .lb-deals { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+    /* Goals */
+    .goal-row { margin-bottom: 16px; }
+    .goal-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .goal-name { font-size: 14px; color: #374151; font-weight: 500; }
+    .goal-pct { font-size: 14px; font-weight: 700; color: #6C63FF; }
+    .goal-bar { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+    .goal-fill { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #6C63FF, #3D5AF1); }
+    .goal-fill.over { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .goal-fill.warn { background: linear-gradient(90deg, #f97316, #ea580c); }
+
+    /* Insights */
+    .insight { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .insight:last-child { border-bottom: none; }
+    .insight-icon { font-size: 20px; flex-shrink: 0; }
+    .insight-text { font-size: 14px; color: #374151; line-height: 1.5; }
+    .insight-text strong { color: #1a1a2e; }
+
+    .cta { padding: 36px 40px; text-align: center; background: linear-gradient(135deg, #f8faff, #eef2ff); }
+    .cta h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+    .cta p { font-size: 14px; color: #64748b; margin-bottom: 24px; }
+    .cta-btn { display: inline-block; background: linear-gradient(135deg, #6C63FF, #3D5AF1); color: #fff; font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 10px; text-decoration: none; }
+
+    .footer { padding: 24px 40px; background: #0f172a; text-align: center; }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.8; }
+    .footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-bg">
+      <div class="month-tag">Monthly Report</div>
+      <h1>{{MONTH_NAME}} <span>{{YEAR}}</span><br>Performance Review</h1>
+      <div class="sub">Tryverse CRM · Comprehensive Lead & Revenue Summary</div>
+    </div>
+  </div>
+
+  <!-- Score Card -->
+  <div class="score-card">
+    <div class="score-circle">
+      <div class="score-num">{{SCORE}}</div>
+      <div class="score-lbl">Score</div>
+    </div>
+    <div class="score-text">
+      <h3>{{SCORE_TITLE}}</h3>
+      <p>{{SCORE_DESCRIPTION}} You've onboarded <strong>{{NEW_LEADS_MONTH}} new leads</strong> and generated <strong>{{REVENUE_MONTH}}</strong> in pipeline value this month.</p>
+    </div>
+  </div>
+
+  <!-- Mega Stats -->
+  <div class="mega-stats">
+    <div class="mega-stat">
+      <div class="m-num">{{TOTAL_LEADS}}</div>
+      <div class="m-change">+{{LEADS_GROWTH}}%</div>
+      <div class="m-lbl">Total Leads</div>
+    </div>
+    <div class="mega-stat">
+      <div class="m-num">{{CLOSED_WON}}</div>
+      <div class="m-change {{CLOSED_TREND}}">{{CLOSED_CHANGE}}</div>
+      <div class="m-lbl">Closed Won</div>
+    </div>
+    <div class="mega-stat">
+      <div class="m-num">{{CONVERSION}}%</div>
+      <div class="m-change">{{CONV_CHANGE}}</div>
+      <div class="m-lbl">Conv. Rate</div>
+    </div>
+  </div>
+
+  <!-- Monthly Trend Chart -->
+  <div class="section">
+    <div class="section-title">📊 Weekly Breakdown This Month</div>
+    <div class="chart">
+      <div class="bar-wrap"><div class="bar" style="height:{{W1_H}}%"></div></div>
+      <div class="bar-wrap"><div class="bar" style="height:{{W2_H}}%"></div></div>
+      <div class="bar-wrap"><div class="bar" style="height:{{W3_H}}%"></div></div>
+      <div class="bar-wrap"><div class="bar active" style="height:{{W4_H}}%"></div></div>
+    </div>
+    <div class="chart-labels">
+      <div class="chart-label">Week 1<br>{{W1_VAL}}</div>
+      <div class="chart-label">Week 2<br>{{W2_VAL}}</div>
+      <div class="chart-label">Week 3<br>{{W3_VAL}}</div>
+      <div class="chart-label" style="color:#6C63FF;font-weight:600">Week 4<br>{{W4_VAL}}</div>
+    </div>
+  </div>
+
+  <!-- Top Leads Leaderboard -->
+  <div class="section">
+    <div class="section-title">🏆 Top Leads of the Month</div>
+
+    <div class="lb-row">
+      <div class="lb-rank gold">#1</div>
+      <div class="lb-avatar">H</div>
+      <div class="lb-info">
+        <div class="lb-name">Hamid Khan</div>
+        <div class="lb-detail">hamid.khan@xvantech.com · Xvantech · Enterprise</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-value">${{HAMID_VALUE}}</div>
+        <div class="lb-deals">{{HAMID_DEALS}} deals</div>
+      </div>
+    </div>
+
+    {{#TOP_LEADS_MONTH}}
+    <div class="lb-row">
+      <div class="lb-rank {{RANK_CLASS}}">#{{RANK}}</div>
+      <div class="lb-avatar">{{INITIAL}}</div>
+      <div class="lb-info">
+        <div class="lb-name">{{NAME}}</div>
+        <div class="lb-detail">{{EMAIL}} · {{COMPANY}}</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-value">{{VALUE}}</div>
+        <div class="lb-deals">{{DEALS}} deals</div>
+      </div>
+    </div>
+    {{/TOP_LEADS_MONTH}}
+  </div>
+
+  <!-- Monthly Goals -->
+  <div class="section">
+    <div class="section-title">🎯 Monthly Goals Progress</div>
+    <div class="goal-row">
+      <div class="goal-header"><span class="goal-name">New Leads Target</span><span class="goal-pct">{{LEADS_GOAL_PCT}}%</span></div>
+      <div class="goal-bar"><div class="goal-fill {{LEADS_GOAL_CLASS}}" style="width:{{LEADS_GOAL_PCT}}%"></div></div>
+    </div>
+    <div class="goal-row">
+      <div class="goal-header"><span class="goal-name">Revenue Target</span><span class="goal-pct">{{REVENUE_GOAL_PCT}}%</span></div>
+      <div class="goal-bar"><div class="goal-fill {{REVENUE_GOAL_CLASS}}" style="width:{{REVENUE_GOAL_PCT}}%"></div></div>
+    </div>
+    <div class="goal-row">
+      <div class="goal-header"><span class="goal-name">Deals Closed</span><span class="goal-pct">{{DEALS_GOAL_PCT}}%</span></div>
+      <div class="goal-bar"><div class="goal-fill {{DEALS_GOAL_CLASS}}" style="width:{{DEALS_GOAL_PCT}}%"></div></div>
+    </div>
+    <div class="goal-row" style="margin-bottom:0">
+      <div class="goal-header"><span class="goal-name">Email Response Rate</span><span class="goal-pct">{{EMAIL_GOAL_PCT}}%</span></div>
+      <div class="goal-bar"><div class="goal-fill" style="width:{{EMAIL_GOAL_PCT}}%"></div></div>
+    </div>
+  </div>
+
+  <!-- AI Insights -->
+  <div class="section">
+    <div class="section-title">💡 Monthly Insights</div>
+    <div class="insight">
+      <div class="insight-icon">📈</div>
+      <div class="insight-text"><strong>Growth trend:</strong> {{GROWTH_INSIGHT}}</div>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">🎯</div>
+      <div class="insight-text"><strong>Top segment:</strong> {{SEGMENT_INSIGHT}}</div>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">⚡</div>
+      <div class="insight-text"><strong>Action needed:</strong> {{ACTION_INSIGHT}}</div>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">🏆</div>
+      <div class="insight-text"><strong>Win highlight:</strong> Hamid Khan (hamid.khan@xvantech.com) progressed to <strong>Proposal stage</strong> — priority follow-up this month.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h2>Ready for Next Month?</h2>
+    <p>Review your full monthly report, set new targets, and build on this month's wins.</p>
+    <a href="{{CRM_URL}}" class="cta-btn">View Full Monthly Report →</a>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>
+      <strong style="color:rgba(255,255,255,0.5)">Tryverse CRM</strong> · Monthly Report for {{RECIPIENT_EMAIL}}<br>
+      <a href="{{UNSUBSCRIBE_URL}}">Unsubscribe</a> · <a href="{{PREFERENCES_URL}}">Email Preferences</a> · <a href="{{CRM_URL}}">Dashboard</a>
+    </p>
+    <p style="margin-top:6px">© 2026 Tryverse. All rights reserved.</p>
+  </div>
+
+</div>
+</body>
+</html>

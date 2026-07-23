@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Day 7 - Offer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    .wrapper { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    .content { padding: 40px; }
+    .content p { color: #555; line-height: 1.7; font-size: 15px; }
+    .offer-box { background: #f0fff4; border: 2px solid #48bb78; padding: 16px; margin: 20px 0; border-radius: 6px; }
+    .offer-box strong { color: #22543d; }
+    .cta { background: #667eea; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; display: inline-block; margin: 20px 0; font-weight: 600; }
+    .cta-secondary { background: transparent; border: 2px solid #667eea; color: #667eea; padding: 10px 26px; }
+    .footer { background: #f9f9f9; padding: 20px 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="badge">🎁 Day 7</div>
+    <h1>Something Special</h1>
+  </div>
+  
+  <div class="content">
+    <p>Hi {{first_name}},</p>
+    
+    <p>You've been great to stay connected with us this week. I wanted to offer you something special:</p>
+    
+    <div class="offer-box">
+      <p><strong>Free 20-minute consultation</strong></p>
+      <p>We can talk through your specific situation and I'll share personalized recommendations on what's working for teams like yours.</p>
+    </div>
+    
+    <p>No strings attached — just a genuine conversation to see if we can help.</p>
+    
+    <p style="margin-top: 30px;">
+      <a href="{{book_call_url}}" class="cta">Book Your Slot (20 min)</a><br>
+      <a href="{{learn_more_url}}" class="cta cta-secondary">Learn More First</a>
+    </p>
+    
+    <p>Either way, we'll be in touch next week with more insights.</p>
+    
+    <p>Best,<br><strong>The Team</strong></p>
+  </div>
+  
+  <div class="footer">
+    <p>You're receiving this because you subscribed. <a href="{{unsubscribe_url}}" style="color:#667eea;">Unsubscribe</a></p>
+  </div>
+</div>
+</body>
+</html>

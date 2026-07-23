@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Day 1 - Quick Tip</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    .wrapper { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    .content { padding: 40px; }
+    .content h2 { color: #333; font-size: 20px; margin-top: 0; }
+    .content p { color: #555; line-height: 1.7; font-size: 15px; }
+    .tip-box { background: #f0f4ff; border-left: 4px solid #667eea; padding: 16px; margin: 20px 0; border-radius: 6px; }
+    .cta { background: #667eea; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; display: inline-block; margin: 20px 0; font-weight: 600; }
+    .footer { background: #f9f9f9; padding: 20px 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="badge">💡 Day 1</div>
+    <h1>Quick Tip for You</h1>
+  </div>
+  
+  <div class="content">
+    <p>Hi {{first_name}},</p>
+    
+    <p>Here's something we've learned works really well:</p>
+    
+    <div class="tip-box">
+      <p><strong>Focus on what matters first.</strong> Most teams spend 80% of their time on tasks that deliver only 20% of results. The key is identifying which 20% of activities drive real value for your business.</p>
+    </div>
+    
+    <p>This applies whether you're managing leads, projects, or customer relationships.</p>
+    
+    <p><a href="{{learn_more_url}}" class="cta">Learn More</a></p>
+    
+    <p>Looking forward to staying in touch!</p>
+    
+    <p>Best,<br><strong>The Team</strong></p>
+  </div>
+  
+  <div class="footer">
+    <p>You're receiving this because you subscribed. <a href="{{unsubscribe_url}}" style="color:#667eea;">Unsubscribe</a></p>
+  </div>
+</div>
+</body>
+</html>

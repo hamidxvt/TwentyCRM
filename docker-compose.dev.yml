@@ -1,0 +1,179 @@
+# Docker Compose for Local Development
+# This is optimized for development with hot-reload and debugging
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: twenty-dev-postgres
+    environment:
+      POSTGRES_DB: twenty
+      POSTGRES_USER: ${POSTGRES_USER:-twenty}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-twenty} -d twenty"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - twenty-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: twenty-dev-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - twenty-dev
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: twenty-dev-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - twenty-dev
+
+  # Development server - uses node directly with nodemon for hot-reload
+  twenty-server:
+    build:
+      context: ./twenty
+      dockerfile: Dockerfile.dev
+    container_name: twenty-dev-server
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://${POSTGRES_USER:-twenty}:${POSTGRES_PASSWORD:-password}@postgres:5432/twenty
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      API_URL: http://localhost:3001
+      API_PORT: 3001
+      DEBUG: true
+    ports:
+      - "3001:3001"
+      - "9229:9229"  # Node debugger port
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./twenty:/app
+      - node_modules:/app/node_modules
+    command: npm run dev
+    networks:
+      - twenty-dev
+    environment:
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: dev@twenty.local
+
+  # Frontend development server with hot-reload
+  twenty-front:
+    build:
+      context: ./twenty
+      dockerfile: Dockerfile.dev.front
+    container_name: twenty-dev-front
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://localhost:3001
+      PORT: 3000
+      SKIP_PREFLIGHT_CHECK: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - twenty-server
+    volumes:
+      - ./twenty:/app
+      - front_node_modules:/app/node_modules
+    networks:
+      - twenty-dev
+
+  # Mautic for email development
+  mautic:
+    image: mautic/mautic:latest
+    container_name: twenty-dev-mautic
+    environment:
+      MAUTIC_DB_HOST: postgres
+      MAUTIC_DB_PORT: 5432
+      MAUTIC_DB_NAME: mautic_dev
+      MAUTIC_DB_USER: ${POSTGRES_USER:-twenty}
+      MAUTIC_DB_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      MAUTIC_URL: http://localhost:8080
+      MAUTIC_TRUSTED_HOSTS: localhost,127.0.0.1
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - mautic_dev_data:/var/www/html
+      - ./mautic/config:/var/www/html/config
+    networks:
+      - twenty-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: twenty-dev-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    networks:
+      - twenty-dev
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  mautic_dev_data:
+  pgadmin_dev_data:
+  node_modules:
+  front_node_modules:
+
+networks:
+  twenty-dev:
+    driver: bridge
+
+# Useful commands:
+# Start all services: docker-compose -f docker-compose.dev.yml up
+# Rebuild and start: docker-compose -f docker-compose.dev.yml up --build
+# View logs: docker-compose -f docker-compose.dev.yml logs -f [service-name]
+# Stop all: docker-compose -f docker-compose.dev.yml stop
+# Clean up: docker-compose -f docker-compose.dev.yml down
+# Access services:
+#   - Frontend: http://localhost:3000
+#   - API: http://localhost:3001
+#   - Mautic: http://localhost:8080
+#   - PgAdmin: http://localhost:5050 (admin/admin)
+#   - Mailhog: http://localhost:8025
+#   - Database: localhost:5432
+#   - Redis: localhost:6379
