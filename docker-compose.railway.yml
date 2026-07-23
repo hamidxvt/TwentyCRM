@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PG_DATABASE_NAME:-default}
+      POSTGRES_PASSWORD: ${PG_DATABASE_PASSWORD:-postgres}
+      POSTGRES_USER: ${PG_DATABASE_USER:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${PG_DATABASE_USER:-postgres} -h localhost -d postgres
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    networks:
+      - twenty_network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: ["--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis_data:/data
+    networks:
+      - twenty_network
+
+  server:
+    image: twentycrm/twenty:${TAG:-latest}
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_PORT: 3000
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD:-postgres}@postgres:5432/${PG_DATABASE_NAME:-default}
+      SERVER_URL: ${SERVER_URL:-http://localhost:3000}
+      REDIS_URL: redis://redis:6379
+      DISABLE_DB_MIGRATIONS: ${DISABLE_DB_MIGRATIONS:-false}
+      DISABLE_CRON_JOBS_REGISTRATION: ${DISABLE_CRON_JOBS_REGISTRATION:-false}
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION}
+      STORAGE_S3_NAME: ${STORAGE_S3_NAME}
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      FALLBACK_ENCRYPTION_KEY: ${FALLBACK_ENCRYPTION_KEY}
+      APP_SECRET: ${APP_SECRET}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@tryverse.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Tryverse CRM}
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-smtp}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthz || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    networks:
+      - twenty_network
+
+  worker:
+    image: twentycrm/twenty:${TAG:-latest}
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    command: ["yarn", "worker:prod"]
+    environment:
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD:-postgres}@postgres:5432/${PG_DATABASE_NAME:-default}
+      SERVER_URL: ${SERVER_URL:-http://localhost:3000}
+      REDIS_URL: redis://redis:6379
+      DISABLE_DB_MIGRATIONS: "true"
+      DISABLE_CRON_JOBS_REGISTRATION: "true"
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION}
+      STORAGE_S3_NAME: ${STORAGE_S3_NAME}
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      FALLBACK_ENCRYPTION_KEY: ${FALLBACK_ENCRYPTION_KEY}
+      APP_SECRET: ${APP_SECRET}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@tryverse.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Tryverse CRM}
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-smtp}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    restart: always
+    networks:
+      - twenty_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  server-local-data:
+
+networks:
+  twenty_network:
+    driver: bridge
