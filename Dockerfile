@@ -6,8 +6,7 @@ ENV NODE_PORT=3000
 # This can be overridden per-deploy but defaults to enabled.
 ENV DISABLE_DB_MIGRATIONS=false
 
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+COPY --chmod=755 start.sh /start.sh
 
 EXPOSE 3000
-CMD ["/usr/local/bin/start.sh"]
+CMD ["/start.sh"]
