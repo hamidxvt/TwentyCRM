@@ -32,6 +32,7 @@ PG_DATABASE_PASSWORD = (generate strong password)
 ENCRYPTION_KEY = (run: openssl rand -base64 32)
 APP_SECRET = (run: openssl rand -base64 32)
 SERVER_URL = https://your-app-name.railway.app
+IS_CONFIG_VARIABLES_IN_DB_ENABLED = false
 ```
 
 ### Email Configuration (for drip campaigns)
